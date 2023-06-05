@@ -72,7 +72,6 @@ fn main() {
         let cube_width = 20;
         let horizontal_offset = -2 * cube_width;
 
-        // First cube
         for cube_x in -cube_width..cube_width {
             for cube_y in -cube_width..cube_width {
                 calculate_for_surface(
