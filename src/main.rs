@@ -6,6 +6,9 @@ use std::time::Duration;
 const WIDTH: usize = 160;
 const HEIGHT: usize = 44;
 const BACKGROUND_ASCII_CODE: u8 = b' ';
+const CUBE_WIDTH: i32 = 20;
+const HORIZONTAL_OFFSET: i32 = -2 * CUBE_WIDTH;
+const DISTANCE_FROM_CAM: i32 = 100;
 
 fn calculate_x(i: f32, j: f32, k: f32, a: f32, b: f32, c: f32) -> f32 {
     j * a.sin() * b.sin() * c.cos() - k * a.cos() * b.sin() * c.cos()
@@ -29,10 +32,6 @@ fn calculate_for_surface(
     ch: u8,
     buffer: &mut [u8],
     z_buffer: &mut [f32],
-    width: usize,
-    height: usize,
-    distance_from_cam: i32,
-    horizontal_offset: f32,
     k1: f32,
     a: f32,
     b: f32,
@@ -41,15 +40,15 @@ fn calculate_for_surface(
 
     let x = calculate_x(cube_x, cube_y, cube_z, a, b, c);
     let y = calculate_y(cube_x, cube_y, cube_z, a, b, c);
-    let z = calculate_z(cube_x, cube_y, cube_z, a, b, c) + distance_from_cam as f32;
+    let z = calculate_z(cube_x, cube_y, cube_z, a, b, c) + DISTANCE_FROM_CAM as f32;
 
     let ooz = 1.0 / z;
 
-    let xp = (width as f32 / 2.0 + horizontal_offset + k1 * ooz * x * 2.0) as usize;
-    let yp = (height as f32 / 2.0 + k1 * ooz * y) as usize;
+    let xp = (WIDTH as f32 / 2.0 + HORIZONTAL_OFFSET as f32 + k1 * ooz * x * 2.0) as usize;
+    let yp = (HEIGHT as f32 / 2.0 + k1 * ooz * y) as usize;
 
-    let idx = xp + yp * width;
-    if idx < width * height {
+    let idx = xp + yp * WIDTH;
+    if idx < WIDTH * HEIGHT {
         if ooz > z_buffer[idx] {
             z_buffer[idx] = ooz;
             buffer[idx] = ch;
@@ -60,7 +59,6 @@ fn calculate_for_surface(
 fn main() {
     let mut buffer = [BACKGROUND_ASCII_CODE; WIDTH * HEIGHT];
     let mut z_buffer = [0.0; WIDTH * HEIGHT];
-    let distance_from_cam = 100;
     let mut a = 0.0;
     let mut b = 0.0;
     let mut c = 0.0;
@@ -69,45 +67,42 @@ fn main() {
         buffer.fill(BACKGROUND_ASCII_CODE);
         z_buffer.fill(0.0);
 
-        let cube_width = 20;
-        let horizontal_offset = -2 * cube_width;
-
-        for cube_x in -cube_width..cube_width {
-            for cube_y in -cube_width..cube_width {
+        for cube_x in -CUBE_WIDTH..CUBE_WIDTH {
+            for cube_y in -CUBE_WIDTH..CUBE_WIDTH {
                 calculate_for_surface(
-                    cube_x as f32, cube_y as f32, -cube_width as f32,
-                    b'@', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    cube_x as f32, cube_y as f32, -CUBE_WIDTH as f32,
+                    b'@', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
                 calculate_for_surface(
-                    cube_width as f32, cube_y as f32, cube_x as f32,
-                    b'$', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    CUBE_WIDTH as f32, cube_y as f32, cube_x as f32,
+                    b'$', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
                 calculate_for_surface(
-                    -cube_width as f32, cube_y as f32, -cube_x as f32,
-                    b'~', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    -CUBE_WIDTH as f32, cube_y as f32, -cube_x as f32,
+                    b'~', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
                 calculate_for_surface(
-                    -cube_x as f32, cube_y as f32, cube_width as f32,
-                    b'#', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    -cube_x as f32, cube_y as f32, CUBE_WIDTH as f32,
+                    b'#', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
                 calculate_for_surface(
-                    cube_x as f32, -cube_width as f32, -cube_y as f32,
-                    b';', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    cube_x as f32, -CUBE_WIDTH as f32, -cube_y as f32,
+                    b';', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
                 calculate_for_surface(
-                    cube_x as f32, cube_width as f32, cube_y as f32,
-                    b'+', &mut buffer, &mut z_buffer, WIDTH, HEIGHT,
-                    distance_from_cam, horizontal_offset as f32, 40.0,
+                    cube_x as f32, CUBE_WIDTH as f32, cube_y as f32,
+                    b'+', &mut buffer, &mut z_buffer,
+                    40.0,
                     a, b, c,
                 );
             }
