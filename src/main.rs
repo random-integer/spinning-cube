@@ -1,5 +1,3 @@
-// does not work
-
 use std::thread;
 use std::time::Duration;
 
